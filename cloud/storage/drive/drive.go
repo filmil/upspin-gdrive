@@ -3,7 +3,7 @@
 // license that can be found in the LICENSE file.
 
 // Package drive implements a storage.Storage that stores data in Google Drive.
-package drive // import "drive.upspin.io/cloud/storage/drive"
+package drive // import "github.com/filmil/upspin-gdrive/cloud/storage/drive"
 
 import (
 	"bytes"
@@ -13,7 +13,7 @@ import (
 	"os"
 	"time"
 
-	"drive.upspin.io/config"
+	"github.com/filmil/upspin-gdrive/config"
 
 	"upspin.io/cache"
 	"upspin.io/cloud/storage"

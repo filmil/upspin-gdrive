@@ -1,0 +1,6 @@
+bazel-*
+
+.gemini/
+!.gemini/config.json
+!.gemini/skills
+

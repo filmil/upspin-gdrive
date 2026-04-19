@@ -1,0 +1,12 @@
+load("@rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "config",
+    srcs = ["oauth2.go"],
+    importpath = "github.com/filmil/upspin-gdrive/config",
+    visibility = ["//visibility:public"],
+    deps = [
+        "@org_golang_google_api//drive/v3:drive",
+        "@org_golang_x_oauth2//:oauth2",
+    ],
+)

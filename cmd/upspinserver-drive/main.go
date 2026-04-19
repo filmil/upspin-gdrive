@@ -5,14 +5,14 @@
 // Command upspinserver-drive is a combined DirServer and StoreServer for use on
 // stand-alone machines. It provides the production implementations of the dir and
 // store servers (dir/server and store/server) with support for storage in Google Drive.
-package main // import "drive.upspin.io/cmd/upspinserver-drive"
+package main // import "github.com/filmil/upspin-gdrive/cmd/upspinserver-drive"
 
 import (
 	"upspin.io/cloud/https"
 	"upspin.io/serverutil/upspinserver"
 
 	// Storage on Google Drive.
-	_ "drive.upspin.io/cloud/storage/drive"
+	_ "github.com/filmil/upspin-gdrive/cloud/storage/drive"
 )
 
 func main() {
