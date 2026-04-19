@@ -1,4 +1,4 @@
-load("@rules_oci//oci:defs.bzl", "oci_image", "oci_load")
+load("@rules_oci//oci:defs.bzl", "oci_image", "oci_load", "oci_push")
 load("@rules_pkg//:pkg.bzl", "pkg_tar")
 
 pkg_tar(
@@ -21,6 +21,13 @@ oci_load(
     repo_tags = ["upspinserver-drive:latest"],
 )
 
+oci_push(
+    name = "upspinserver_push",
+    image = ":upspinserver_image",
+    repository = "docker.io/filipfilmar/upspinserver-drive",
+    remote_tags = ["latest"],
+)
+
 pkg_tar(
     name = "setupstorage_tar",
     srcs = ["//cmd/upspin-setupstorage-drive:upspin-setupstorage-drive"],
@@ -39,4 +46,11 @@ oci_load(
     name = "setupstorage_tarball",
     image = ":setupstorage_image",
     repo_tags = ["upspin-setupstorage-drive:latest"],
+)
+
+oci_push(
+    name = "setupstorage_push",
+    image = ":setupstorage_image",
+    repository = "docker.io/filipfilmar/upspin-setupstorage-drive",
+    remote_tags = ["latest"],
 )
