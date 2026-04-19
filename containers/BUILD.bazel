@@ -1,6 +1,6 @@
+load("@bazel_lib//lib:transitions.bzl", "platform_transition_filegroup")
 load("@rules_oci//oci:defs.bzl", "oci_image", "oci_image_index", "oci_load", "oci_push")
 load("@rules_pkg//:pkg.bzl", "pkg_tar")
-load("@bazel_lib//lib:transitions.bzl", "platform_transition_filegroup")
 
 # Containers are only compatible with non-Windows platforms.
 _NOT_WINDOWS = select({
@@ -18,7 +18,7 @@ _ARCH = [
 
 pkg_tar(
     name = "upspinserver_tar",
-    srcs = ["//cmd/upspinserver-drive:upspinserver-drive"],
+    srcs = ["//cmd/upspinserver-drive"],
     package_dir = "/usr/bin",
     target_compatible_with = _NOT_WINDOWS,
 )
@@ -26,10 +26,10 @@ pkg_tar(
 oci_image(
     name = "upspinserver_image_base",
     base = "@distroless_base",
-    tars = [":upspinserver_tar"],
     entrypoint = ["/usr/bin/upspinserver-drive"],
-    visibility = ["//visibility:public"],
     target_compatible_with = _NOT_WINDOWS,
+    tars = [":upspinserver_tar"],
+    visibility = ["//visibility:public"],
 )
 
 [
@@ -62,8 +62,8 @@ oci_load(
 oci_push(
     name = "upspinserver_push",
     image = ":upspinserver_image",
-    repository = "docker.io/filipfilmar/upspinserver-drive",
     remote_tags = ["latest"],
+    repository = "docker.io/filipfilmar/upspinserver-drive",
     target_compatible_with = _NOT_WINDOWS,
 )
 
@@ -71,7 +71,7 @@ oci_push(
 
 pkg_tar(
     name = "setupstorage_tar",
-    srcs = ["//cmd/upspin-setupstorage-drive:upspin-setupstorage-drive"],
+    srcs = ["//cmd/upspin-setupstorage-drive"],
     package_dir = "/usr/bin",
     target_compatible_with = _NOT_WINDOWS,
 )
@@ -79,10 +79,10 @@ pkg_tar(
 oci_image(
     name = "setupstorage_image_base",
     base = "@distroless_base",
-    tars = [":setupstorage_tar"],
     entrypoint = ["/usr/bin/upspin-setupstorage-drive"],
-    visibility = ["//visibility:public"],
     target_compatible_with = _NOT_WINDOWS,
+    tars = [":setupstorage_tar"],
+    visibility = ["//visibility:public"],
 )
 
 [
@@ -115,7 +115,7 @@ oci_load(
 oci_push(
     name = "setupstorage_push",
     image = ":setupstorage_image",
-    repository = "docker.io/filipfilmar/upspin-setupstorage-drive",
     remote_tags = ["latest"],
+    repository = "docker.io/filipfilmar/upspin-setupstorage-drive",
     target_compatible_with = _NOT_WINDOWS,
 )
