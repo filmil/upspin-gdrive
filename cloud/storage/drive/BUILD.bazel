@@ -7,13 +7,13 @@ go_library(
     visibility = ["//visibility:public"],
     deps = [
         "//config",
+        "@io_upspin//cache",
+        "@io_upspin//cloud/storage",
+        "@io_upspin//errors",
+        "@io_upspin//upspin",
         "@org_golang_google_api//drive/v3:drive",
         "@org_golang_google_api//googleapi",
         "@org_golang_x_oauth2//:oauth2",
-        "@upspin//cache",
-        "@upspin//cloud/storage",
-        "@upspin//errors",
-        "@upspin//upspin",
     ],
 )
 
@@ -22,8 +22,8 @@ go_test(
     srcs = ["drive_e2e_test.go"],
     embed = [":drive"],
     deps = [
-        "@upspin//cloud/storage",
-        "@upspin//errors",
-        "@upspin//log",
+        "@io_upspin//cloud/storage",
+        "@io_upspin//errors",
+        "@io_upspin//log",
     ],
 )
