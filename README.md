@@ -1,6 +1,8 @@
 # Upspin `drive` repository
 
 [![Build and Test](https://github.com/filmil/upspin-gdrive/actions/workflows/build-test.yml/badge.svg)](https://github.com/filmil/upspin-gdrive/actions/workflows/build-test.yml)
+[![Tag and Release](https://github.com/filmil/upspin-gdrive/actions/workflows/tag-and-release.yml/badge.svg)](https://github.com/filmil/upspin-gdrive/actions/workflows/tag-and-release.yml)
+[![Publish to BCR](https://github.com/filmil/upspin-gdrive/actions/workflows/publish-bcr.yml/badge.svg)](https://github.com/filmil/upspin-gdrive/actions/workflows/publish-bcr.yml)
 
 ## GitHub Workflows
 
