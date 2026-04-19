@@ -58,7 +58,14 @@ func New(o *storage.Opts) (storage.Storage, error) {
 		return nil, errors.E(op, errors.Invalid, errors.Errorf("invalid expiry %q: %v", o.Opts["expiry"], err))
 	}
 	ctx := context.Background()
-	client := config.OAuth2.Client(ctx, &t)
+	conf := *config.OAuth2
+	if cid, ok := o.Opts["clientId"]; ok {
+		conf.ClientID = cid
+	}
+	if csec, ok := o.Opts["clientSecret"]; ok {
+		conf.ClientSecret = csec
+	}
+	client := conf.Client(ctx, &t)
 	svc, err := drive.New(client)
 	if err != nil {
 		return nil, errors.E(op, errors.Internal, err)
