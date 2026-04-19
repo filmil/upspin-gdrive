@@ -1,11 +1,20 @@
-load("@rules_oci//oci:defs.bzl", "oci_image", "oci_load", "oci_push")
+load("@rules_oci//oci:defs.bzl", "oci_image", "oci_image_index", "oci_load", "oci_push")
 load("@rules_pkg//:pkg.bzl", "pkg_tar")
+load("@bazel_lib//lib:transitions.bzl", "platform_transition_filegroup")
 
 # Containers are only compatible with non-Windows platforms.
 _NOT_WINDOWS = select({
     "@platforms//os:windows": ["@platforms//:incompatible"],
     "//conditions:default": [],
 })
+
+# Architecture list for multi-arch images.
+_ARCH = [
+    "amd64",
+    "arm64",
+]
+
+# --- upspinserver-drive ---
 
 pkg_tar(
     name = "upspinserver_tar",
@@ -15,7 +24,7 @@ pkg_tar(
 )
 
 oci_image(
-    name = "upspinserver_image",
+    name = "upspinserver_image_base",
     base = "@distroless_base",
     tars = [":upspinserver_tar"],
     entrypoint = ["/usr/bin/upspinserver-drive"],
@@ -23,8 +32,28 @@ oci_image(
     target_compatible_with = _NOT_WINDOWS,
 )
 
+[
+    platform_transition_filegroup(
+        name = "upspinserver_image_" + arch,
+        srcs = [":upspinserver_image_base"],
+        target_platform = "@rules_go//go/toolchain:linux_" + arch,
+    )
+    for arch in _ARCH
+]
+
+oci_image_index(
+    name = "upspinserver_image",
+    images = [
+        ":upspinserver_image_" + arch
+        for arch in _ARCH
+    ],
+    target_compatible_with = _NOT_WINDOWS,
+    visibility = ["//visibility:public"],
+)
+
 oci_load(
     name = "upspinserver_tarball",
+    format = "oci",
     image = ":upspinserver_image",
     repo_tags = ["upspinserver-drive:latest"],
     target_compatible_with = _NOT_WINDOWS,
@@ -38,6 +67,8 @@ oci_push(
     target_compatible_with = _NOT_WINDOWS,
 )
 
+# --- upspin-setupstorage-drive ---
+
 pkg_tar(
     name = "setupstorage_tar",
     srcs = ["//cmd/upspin-setupstorage-drive:upspin-setupstorage-drive"],
@@ -46,7 +77,7 @@ pkg_tar(
 )
 
 oci_image(
-    name = "setupstorage_image",
+    name = "setupstorage_image_base",
     base = "@distroless_base",
     tars = [":setupstorage_tar"],
     entrypoint = ["/usr/bin/upspin-setupstorage-drive"],
@@ -54,8 +85,28 @@ oci_image(
     target_compatible_with = _NOT_WINDOWS,
 )
 
+[
+    platform_transition_filegroup(
+        name = "setupstorage_image_" + arch,
+        srcs = [":setupstorage_image_base"],
+        target_platform = "@rules_go//go/toolchain:linux_" + arch,
+    )
+    for arch in _ARCH
+]
+
+oci_image_index(
+    name = "setupstorage_image",
+    images = [
+        ":setupstorage_image_" + arch
+        for arch in _ARCH
+    ],
+    target_compatible_with = _NOT_WINDOWS,
+    visibility = ["//visibility:public"],
+)
+
 oci_load(
     name = "setupstorage_tarball",
+    format = "oci",
     image = ":setupstorage_image",
     repo_tags = ["upspin-setupstorage-drive:latest"],
     target_compatible_with = _NOT_WINDOWS,
