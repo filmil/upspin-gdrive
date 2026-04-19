@@ -8,11 +8,16 @@
 package main // import "github.com/filmil/upspin-gdrive/cmd/upspin-setupstorage-drive"
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"log"
+	"net"
+	"net/http"
 	"os"
+	"os/exec"
 	"path/filepath"
+	"runtime"
 	"time"
 
 	"upspin.io/subcmd"
@@ -70,18 +75,72 @@ func main() {
 	s.ExitNow()
 }
 
-// tokenFromWeb attempts to obtain an OAuth2 token via the web and returns it.
+// tokenFromWeb attempts to obtain an OAuth2 token via a local loopback server.
 func (s *state) tokenFromWeb() *oauth2.Token {
-	authURL := config.OAuth2.AuthCodeURL("state-token", oauth2.AccessTypeOffline)
-	fmt.Printf("Open this URL in your browser to obtain an authorization code:\n\t%s\n", authURL)
-	var code string
-	fmt.Print("Auth code: ")
-	if _, err := fmt.Scan(&code); err != nil {
-		s.Exitf("unable to read authorization code %v", err)
-	}
-	tok, err := config.OAuth2.Exchange(oauth2.NoContext, code)
+	listener, err := net.Listen("tcp", "127.0.0.1:0")
 	if err != nil {
-		s.Exitf("unable to retrieve token from web %v", err)
+		s.Exitf("unable to start local web server: %v", err)
+	}
+	defer listener.Close()
+
+	port := listener.Addr().(*net.TCPAddr).Port
+	redirectURL := fmt.Sprintf("http://127.0.0.1:%d", port)
+
+	conf := *config.OAuth2
+	conf.RedirectURL = redirectURL
+
+	authURL := conf.AuthCodeURL("state-token", oauth2.AccessTypeOffline)
+
+	fmt.Printf("Please visit the following URL in your browser to authorize Upspin:\n\n\t%s\n\n", authURL)
+
+	// Attempt to open the browser automatically
+	switch runtime.GOOS {
+	case "linux":
+		_ = exec.Command("xdg-open", authURL).Start()
+	case "windows":
+		_ = exec.Command("rundll32", "url.dll,FileProtocolHandler", authURL).Start()
+	case "darwin":
+		_ = exec.Command("open", authURL).Start()
+	}
+
+	fmt.Println("Waiting for authorization... (If your browser didn't open automatically, please click the link above)")
+
+	codeCh := make(chan string)
+	errCh := make(chan error)
+
+	mux := http.NewServeMux()
+	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		code := r.URL.Query().Get("code")
+		if code == "" {
+			errStr := r.URL.Query().Get("error")
+			fmt.Fprintf(w, "Error: %s. You can close this window and check the terminal.", errStr)
+			errCh <- fmt.Errorf("authorization failed: %s", errStr)
+			return
+		}
+		fmt.Fprintf(w, "Authorization successful! You can safely close this window and return to the terminal.")
+		codeCh <- code
+	})
+
+	server := &http.Server{Handler: mux}
+	go func() {
+		if err := server.Serve(listener); err != nil && err != http.ErrServerClosed {
+			errCh <- err
+		}
+	}()
+
+	var code string
+	select {
+	case code = <-codeCh:
+	case err := <-errCh:
+		s.Exitf("authorization error: %v", err)
+	}
+
+	// Gracefully shutdown the server since we got what we needed
+	_ = server.Shutdown(context.Background())
+
+	tok, err := conf.Exchange(context.Background(), code)
+	if err != nil {
+		s.Exitf("unable to exchange code for token: %v", err)
 	}
 	return tok
 }
