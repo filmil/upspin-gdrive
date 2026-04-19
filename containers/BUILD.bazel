@@ -1,10 +1,17 @@
 load("@rules_oci//oci:defs.bzl", "oci_image", "oci_load", "oci_push")
 load("@rules_pkg//:pkg.bzl", "pkg_tar")
 
+# Containers are only compatible with non-Windows platforms.
+_NOT_WINDOWS = select({
+    "@platforms//os:windows": ["@platforms//:incompatible"],
+    "//conditions:default": [],
+})
+
 pkg_tar(
     name = "upspinserver_tar",
     srcs = ["//cmd/upspinserver-drive:upspinserver-drive"],
     package_dir = "/usr/bin",
+    target_compatible_with = _NOT_WINDOWS,
 )
 
 oci_image(
@@ -13,12 +20,14 @@ oci_image(
     tars = [":upspinserver_tar"],
     entrypoint = ["/usr/bin/upspinserver-drive"],
     visibility = ["//visibility:public"],
+    target_compatible_with = _NOT_WINDOWS,
 )
 
 oci_load(
     name = "upspinserver_tarball",
     image = ":upspinserver_image",
     repo_tags = ["upspinserver-drive:latest"],
+    target_compatible_with = _NOT_WINDOWS,
 )
 
 oci_push(
@@ -26,12 +35,14 @@ oci_push(
     image = ":upspinserver_image",
     repository = "docker.io/filipfilmar/upspinserver-drive",
     remote_tags = ["latest"],
+    target_compatible_with = _NOT_WINDOWS,
 )
 
 pkg_tar(
     name = "setupstorage_tar",
     srcs = ["//cmd/upspin-setupstorage-drive:upspin-setupstorage-drive"],
     package_dir = "/usr/bin",
+    target_compatible_with = _NOT_WINDOWS,
 )
 
 oci_image(
@@ -40,12 +51,14 @@ oci_image(
     tars = [":setupstorage_tar"],
     entrypoint = ["/usr/bin/upspin-setupstorage-drive"],
     visibility = ["//visibility:public"],
+    target_compatible_with = _NOT_WINDOWS,
 )
 
 oci_load(
     name = "setupstorage_tarball",
     image = ":setupstorage_image",
     repo_tags = ["upspin-setupstorage-drive:latest"],
+    target_compatible_with = _NOT_WINDOWS,
 )
 
 oci_push(
@@ -53,4 +66,5 @@ oci_push(
     image = ":setupstorage_image",
     repository = "docker.io/filipfilmar/upspin-setupstorage-drive",
     remote_tags = ["latest"],
+    target_compatible_with = _NOT_WINDOWS,
 )
