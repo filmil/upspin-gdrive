@@ -1,0 +1,21 @@
+module(
+    name = "upspin_drive",
+    version = "0.0.1",
+)
+
+bazel_dep(name = "rules_go", version = "0.60.0")
+bazel_dep(name = "gazelle", version = "0.50.0")
+bazel_dep(name = "upspin", version = "42.1.6")
+
+go_sdk = use_extension("@rules_go//go:extensions.bzl", "go_sdk")
+go_sdk.download(version = "1.26.2")
+
+go_deps = use_extension("@gazelle//:extensions.bzl", "go_deps")
+go_deps.from_file(go_mod = "//:go.mod")
+
+# Use this to generate the go_deps.bzl file
+use_repo(
+    go_deps,
+    "org_golang_google_api",
+    "org_golang_x_oauth2",
+)

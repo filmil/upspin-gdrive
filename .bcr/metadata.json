@@ -1,0 +1,13 @@
+{
+  "homepage": "https://github.com/filmil/upspin-gdrive",
+  "maintainers": [
+    {
+      "email": "filip.pizlo@gmail.com",
+      "github": "filmil",
+      "name": "Filip Filmar"
+    }
+  ],
+  "repository": [
+    "github:filmil/upspin-gdrive"
+  ]
+}

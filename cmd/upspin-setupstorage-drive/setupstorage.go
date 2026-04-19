@@ -5,7 +5,7 @@
 // The upspin-setupstorage-drive command is an external upspin subcommand that
 // executes the second step in establishing an upspinserver for Google Drive.
 // Run upspin setupstorage-drive -help for more information.
-package main // import "drive.upspin.io/cmd/upspin-setupstorage-drive"
+package main // import "github.com/filmil/upspin-gdrive/cmd/upspin-setupstorage-drive"
 
 import (
 	"flag"
@@ -17,7 +17,7 @@ import (
 
 	"upspin.io/subcmd"
 
-	"drive.upspin.io/config"
+	"github.com/filmil/upspin-gdrive/config"
 	"golang.org/x/oauth2"
 )
 

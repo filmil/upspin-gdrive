@@ -1,0 +1,19 @@
+load("@rules_go//go:def.bzl", "go_binary", "go_library")
+
+go_library(
+    name = "upspinserver-drive_lib",
+    srcs = ["main.go"],
+    importpath = "github.com/filmil/upspin-gdrive/cmd/upspinserver-drive",
+    visibility = ["//visibility:private"],
+    deps = [
+        "//cloud/storage/drive",
+        "@upspin//cloud/https",
+        "@upspin//serverutil/upspinserver",
+    ],
+)
+
+go_binary(
+    name = "upspinserver-drive",
+    embed = [":upspinserver-drive_lib"],
+    visibility = ["//visibility:public"],
+)

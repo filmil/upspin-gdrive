@@ -1,0 +1,29 @@
+load("@rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "drive",
+    srcs = ["drive.go"],
+    importpath = "github.com/filmil/upspin-gdrive/cloud/storage/drive",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//config",
+        "@org_golang_google_api//drive/v3:drive",
+        "@org_golang_google_api//googleapi",
+        "@org_golang_x_oauth2//:oauth2",
+        "@upspin//cache",
+        "@upspin//cloud/storage",
+        "@upspin//errors",
+        "@upspin//upspin",
+    ],
+)
+
+go_test(
+    name = "drive_test",
+    srcs = ["drive_e2e_test.go"],
+    embed = [":drive"],
+    deps = [
+        "@upspin//cloud/storage",
+        "@upspin//errors",
+        "@upspin//log",
+    ],
+)

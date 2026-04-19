@@ -1,0 +1,19 @@
+load("@rules_go//go:def.bzl", "go_binary", "go_library")
+
+go_library(
+    name = "upspin-setupstorage-drive_lib",
+    srcs = ["setupstorage.go"],
+    importpath = "github.com/filmil/upspin-gdrive/cmd/upspin-setupstorage-drive",
+    visibility = ["//visibility:private"],
+    deps = [
+        "//config",
+        "@org_golang_x_oauth2//:oauth2",
+        "@upspin//subcmd",
+    ],
+)
+
+go_binary(
+    name = "upspin-setupstorage-drive",
+    embed = [":upspin-setupstorage-drive_lib"],
+    visibility = ["//visibility:public"],
+)

@@ -4,7 +4,7 @@
 
 // The config package holds OAuth2 configuration data shared by the drive storage
 // and the setupstorage-drive command.
-package config // import "drive.upspin.io/config"
+package config // import "github.com/filmil/upspin-gdrive/config"
 
 import (
 	"golang.org/x/oauth2"
