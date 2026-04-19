@@ -53,20 +53,6 @@ jobs:
       - name: Get repo name
         id: get_repo_name
         run: echo "REPO_NAME=$(echo '${{ github.repository }}' | awk -F '/' '{print $2}')" >> $GITHUB_ENV
-      - name: "Publish source archive"
-        uses: thedoctor0/zip-release@0.7.5
-        with:
-          type: 'zip'
-          filename: "${{ env.REPO_NAME }}-${{ env.VERSION }}.zip"
-          exclusions: '*.git* /*node_modules/* .editorconfig /bazel-*'
-      - name: "Upload source archive"
-        uses: ncipollo/release-action@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag: ${{ steps.tag_version.outputs.new_tag }}
-          allowUpdates: true
-          artifacts: "${{ env.REPO_NAME }}-${{ env.VERSION }}.zip"
 
   release:
     needs: tag
