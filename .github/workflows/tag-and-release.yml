@@ -7,12 +7,6 @@
 # The workflow can be run manually, otherwise it runs once a week.
 name: Tag and Release
 
-env:
-  # The env here is tailored to releasing *one* binary.
-  # example, the label of the bazel target that zips up a built and released
-  # binary is `//test:zip`.
-  # The name of the binary to package. This workflow packages a single binary
-  # into a zip file.
 
 on:
   schedule:
