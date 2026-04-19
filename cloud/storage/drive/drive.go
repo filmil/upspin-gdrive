@@ -65,6 +65,12 @@ func New(o *storage.Opts) (storage.Storage, error) {
 	if csec, ok := o.Opts["clientSecret"]; ok {
 		conf.ClientSecret = csec
 	}
+	if conf.ClientID == "" {
+		return nil, errors.E(op, errors.Invalid, errors.Str("missing clientId"))
+	}
+	if conf.ClientSecret == "" {
+		return nil, errors.E(op, errors.Invalid, errors.Str("missing clientSecret"))
+	}
 	client := conf.Client(ctx, &t)
 	svc, err := drive.New(client)
 	if err != nil {
