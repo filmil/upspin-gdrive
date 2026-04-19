@@ -101,9 +101,34 @@ jobs:
         run: "bazel test --test_output=errors //..."
       - name: "Build binaries for ${{ matrix.os }}_${{ matrix.arch }}"
         run: |
-          bazel build \
-            --platforms=@rules_go//go/toolchain:${{ matrix.os }}_${{ matrix.arch}} \
-            //cmd/...
+          mkdir -p artifacts
+          
+          # Query for all go_binary targets under //cmd/...
+          TARGETS=$(bazel query 'kind("go_binary", //cmd/...)')
+          
+          for TARGET in $TARGETS; do
+            echo "Building $TARGET"
+            bazel build \
+              --platforms=@rules_go//go/toolchain:${{ matrix.os }}_${{ matrix.arch}} \
+              $TARGET
+            
+            # Find the generated binary in bazel-bin
+            # Bazel targets look like //cmd/name:name, the output path is bazel-bin/cmd/name/name_/${matrix.os}_${matrix.arch}/name
+            # or simpler: bazel cquery to find the output file, but since rules_go transitions are tricky,
+            # we can just use find to locate the executable file generated for this package.
+            PKG_PATH=$(echo $TARGET | sed 's|//||' | cut -d':' -f1)
+            BIN_NAME=$(echo $TARGET | cut -d':' -f2)
+            
+            # Use find to pick up the binary regardless of cross-compilation directory structure
+            BIN_FILE=$(find bazel-bin/$PKG_PATH -type f -name "$BIN_NAME" -executable | head -n 1)
+            
+            if [ -n "$BIN_FILE" ]; then
+              # Copy with a name that indicates the target OS and arch
+              cp "$BIN_FILE" "artifacts/${BIN_NAME}-${{ matrix.os }}-${{ matrix.arch }}"
+            else
+              echo "Warning: Could not find binary for $TARGET"
+            fi
+          done
       - name: Find version tag
         id: tag_version
         uses: mathieudutour/github-tag-action@v6.2
@@ -117,7 +142,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           allowUpdates: true
-          artifacts: "bazel-bin/cmd/**/*"
+          artifacts: "artifacts/*"
           tag: ${{ steps.tag_version.outputs.previous_tag }}
 
   # This workflow waits for binary artifacts to be published.
