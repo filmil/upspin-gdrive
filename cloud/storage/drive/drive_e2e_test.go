@@ -31,6 +31,9 @@ var (
 )
 
 func TestPutAndDownload(t *testing.T) {
+	if client == nil {
+		t.Skip("skipping e2e test")
+	}
 	err := client.Put(fileName, testData)
 	if err != nil {
 		t.Fatal(err)
@@ -46,6 +49,9 @@ func TestPutAndDownload(t *testing.T) {
 
 // TODO(x): Test pagination.
 func TestList(t *testing.T) {
+	if client == nil {
+		t.Skip("skipping e2e test")
+	}
 	err := client.Put(fileName, testData)
 	if err != nil {
 		t.Fatal(err)
@@ -70,6 +76,9 @@ func TestList(t *testing.T) {
 }
 
 func TestDeleteAndDownload(t *testing.T) {
+	if client == nil {
+		t.Skip("skipping e2e test")
+	}
 	err := client.Put(fileName, testData)
 	if err != nil {
 		t.Fatal(err)
@@ -92,12 +101,12 @@ func TestMain(m *testing.M) {
 	if !*runE2E || *accessToken == "" || *refreshToken == "" {
 		log.Printf(`
 
-cloud/storage/drive: skipping test as it requires Google Drive credentials. To enable this
-test, set the -run-e2e flag along with valid -access-token and -refresh-token
+cloud/storage/drive: skipping e2e tests as they require Google Drive credentials. To enable these
+tests, set the -run-e2e flag along with valid -access-token and -refresh-token
 flag values.
 
 `)
-		os.Exit(0)
+		os.Exit(m.Run())
 	}
 	// Set up Drive client.
 	var err error
