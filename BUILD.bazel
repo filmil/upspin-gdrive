@@ -1,4 +1,12 @@
 load("@gazelle//:def.bzl", "gazelle")
 
 # gazelle:prefix github.com/filmil/upspin-gdrive
+# gazelle:resolve go upspin.io/cache @upspin//cache
+# gazelle:resolve go upspin.io/cloud/storage @upspin//cloud/storage
+# gazelle:resolve go upspin.io/errors @upspin//errors
+# gazelle:resolve go upspin.io/upspin @upspin//upspin
+# gazelle:resolve go upspin.io/subcmd @upspin//subcmd
+# gazelle:resolve go upspin.io/cloud/https @upspin//cloud/https
+# gazelle:resolve go upspin.io/serverutil/upspinserver @upspin//serverutil/upspinserver
+# gazelle:resolve go upspin.io/log @upspin//log
 gazelle(name = "gazelle")

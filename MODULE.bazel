@@ -5,13 +5,24 @@ module(
 
 bazel_dep(name = "rules_go", version = "0.60.0")
 bazel_dep(name = "gazelle", version = "0.50.0")
-bazel_dep(name = "upspin", version = "42.1.6")
+bazel_dep(name = "upspin", version = "43.0.1")
+
+git_override(
+    module_name = "upspin",
+    commit = "a73a39e10e1e2995600c250d6e330c0e374ba7eb",
+    remote = "https://github.com/filmil/upspin.git",
+)
 
 go_sdk = use_extension("@rules_go//go:extensions.bzl", "go_sdk")
+
 go_sdk.download(version = "1.26.2")
 
 go_deps = use_extension("@gazelle//:extensions.bzl", "go_deps")
 go_deps.from_file(go_mod = "//:go.mod")
+go_deps.gazelle_override(
+    build_file_generation = "off",
+    path = "upspin.io",
+)
 
 # Use this to generate the go_deps.bzl file
 use_repo(
