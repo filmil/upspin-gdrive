@@ -1,0 +1,42 @@
+load("@rules_oci//oci:defs.bzl", "oci_image", "oci_load")
+load("@rules_pkg//:pkg.bzl", "pkg_tar")
+
+pkg_tar(
+    name = "upspinserver_tar",
+    srcs = ["//cmd/upspinserver-drive:upspinserver-drive"],
+    package_dir = "/usr/bin",
+)
+
+oci_image(
+    name = "upspinserver_image",
+    base = "@distroless_base",
+    tars = [":upspinserver_tar"],
+    entrypoint = ["/usr/bin/upspinserver-drive"],
+    visibility = ["//visibility:public"],
+)
+
+oci_load(
+    name = "upspinserver_tarball",
+    image = ":upspinserver_image",
+    repo_tags = ["upspinserver-drive:latest"],
+)
+
+pkg_tar(
+    name = "setupstorage_tar",
+    srcs = ["//cmd/upspin-setupstorage-drive:upspin-setupstorage-drive"],
+    package_dir = "/usr/bin",
+)
+
+oci_image(
+    name = "setupstorage_image",
+    base = "@distroless_base",
+    tars = [":setupstorage_tar"],
+    entrypoint = ["/usr/bin/upspin-setupstorage-drive"],
+    visibility = ["//visibility:public"],
+)
+
+oci_load(
+    name = "setupstorage_tarball",
+    image = ":setupstorage_image",
+    repo_tags = ["upspin-setupstorage-drive:latest"],
+)
