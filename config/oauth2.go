@@ -7,6 +7,8 @@
 package config // import "github.com/filmil/upspin-gdrive/config"
 
 import (
+	"os"
+
 	"golang.org/x/oauth2"
 	"google.golang.org/api/drive/v3"
 )
@@ -14,12 +16,18 @@ import (
 // OAuth2 holds OAuth configuration used by the Upspin Google Drive package. It is used by both
 // the storage and the setup process.
 var OAuth2 = &oauth2.Config{
-	ClientID:     "756365541666-dbbsja2vlrl38j0r85f32cgl3sj6n8k9.apps.googleusercontent.com",
-	ClientSecret: "RfAusHn6sSN7YO2pErac0ggs",
+	ClientID:     getEnvOrDefault("GOOGLE_CLIENT_ID", ""),
+	ClientSecret: getEnvOrDefault("GOOGLE_CLIENT_SECRET", ""),
 	Endpoint: oauth2.Endpoint{
 		AuthURL:  "https://accounts.google.com/o/oauth2/auth",
-		TokenURL: "https://accounts.google.com/o/oauth2/token",
+		TokenURL: "https://oauth2.googleapis.com/token",
 	},
-	RedirectURL: "urn:ietf:wg:oauth:2.0:oob",
-	Scopes:      []string{drive.DriveAppdataScope},
+	Scopes: []string{drive.DriveAppdataScope},
+}
+
+func getEnvOrDefault(key, fallback string) string {
+	if value, ok := os.LookupEnv(key); ok {
+		return value
+	}
+	return fallback
 }
