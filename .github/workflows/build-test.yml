@@ -10,7 +10,10 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
 
@@ -24,11 +27,12 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-bazel-
 
-      - name: Install Bazelisk
-        run: |
-          curl -L https://github.com/bazelbuild/bazelisk/releases/download/v1.19.0/bazelisk-linux-amd64 -o bazelisk
-          chmod +x bazelisk
-          sudo mv bazelisk /usr/local/bin/bazel
+      - name: Setup bazel
+        uses: bazel-contrib/setup-bazel@0.13.0
+        with:
+          bazelisk-cache: true
+          disk-cache: ${{ github.workflow }}
+          repository-cache: true
 
       - name: Build
         run: bazel build //...
