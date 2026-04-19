@@ -1,6 +1,6 @@
 module(
     name = "upspin_drive",
-    version = "0.0.1",
+    version = "42.1.6",
 )
 
 bazel_dep(name = "rules_go", version = "0.60.0")
@@ -16,6 +16,7 @@ go_deps.from_file(go_mod = "//:go.mod")
 # Use this to generate the go_deps.bzl file
 use_repo(
     go_deps,
+    "io_upspin",
     "org_golang_google_api",
     "org_golang_x_oauth2",
 )
