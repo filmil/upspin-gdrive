@@ -64,6 +64,8 @@ func main() {
 	cfg := s.ReadServerConfig(cfgPath)
 	cfg.StoreConfig = []string{
 		"backend=Drive",
+		"clientId=" + config.OAuth2.ClientID,
+		"clientSecret=" + config.OAuth2.ClientSecret,
 		"accessToken=" + tok.AccessToken,
 		"tokenType=" + tok.TokenType,
 		"refreshToken=" + tok.RefreshToken,
