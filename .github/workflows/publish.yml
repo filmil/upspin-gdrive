@@ -5,8 +5,11 @@ on:
   workflow_call:
     secrets:
       BCR_PUBLISH_TOKEN:
-        required: false
-        description: 'Optional token for BCR publishing.'
+        # Required: the reusable workflow below pushes to the registry with it,
+        # and an unset secret surfaces only as an opaque git auth failure after
+        # the release has already been tagged and uploaded.
+        required: true
+        description: 'Classic PAT with `repo` scope, used to push the registry entry and open the PR.'
     inputs:
       tag_name:
         required: true
@@ -19,8 +22,40 @@ on:
         type: string
 
 jobs:
+  # Fail fast, and say why. The publish job runs only after the release has been
+  # tagged, built and uploaded; without this check a bad token is not discovered
+  # until the very last step, leaving a published release with no registry entry
+  # (which is how v42.1.4 and v42.1.5 ended up missing from the registry).
+  check-token:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify BCR_PUBLISH_TOKEN is usable
+        env:
+          TOKEN: ${{ secrets.BCR_PUBLISH_TOKEN }}
+          REGISTRY: filmil/bazel-registry
+        run: |
+          set -o errexit -o nounset -o pipefail
+          if [ -z "${TOKEN}" ]; then
+            echo "::error::BCR_PUBLISH_TOKEN is empty. Mint a classic PAT with the 'repo' scope and set it with: gh secret set BCR_PUBLISH_TOKEN -R ${{ github.repository }}"
+            exit 1
+          fi
+          code="$(curl -sS -o /dev/null -w '%{http_code}' \
+            -H "Authorization: Bearer ${TOKEN}" \
+            -H "Accept: application/vnd.github+json" \
+            "https://api.github.com/repos/${REGISTRY}")"
+          if [ "${code}" = "401" ]; then
+            echo "::error::BCR_PUBLISH_TOKEN is not a valid credential (HTTP 401) -- most likely expired or revoked. Mint a new classic PAT with the 'repo' scope."
+            exit 1
+          fi
+          if [ "${code}" != "200" ]; then
+            echo "::error::BCR_PUBLISH_TOKEN cannot read ${REGISTRY} (HTTP ${code}). A classic PAT with the 'repo' scope is required; fine-grained tokens cannot open pull requests against public repositories."
+            exit 1
+          fi
+          echo "BCR_PUBLISH_TOKEN authenticates and can see ${REGISTRY}."
+
   publish:
-    uses: "bazel-contrib/publish-to-bcr/.github/workflows/publish.yaml@v0.2.2"
+    needs: check-token
+    uses: "bazel-contrib/publish-to-bcr/.github/workflows/publish.yaml@v1.5.0"
     with:
       tag_name: ${{ inputs.tag_name }}
       # This is the registry for which the PR will be open.
