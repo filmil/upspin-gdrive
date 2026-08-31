@@ -1,0 +1,102 @@
+name: "Publish multi-arch containers"
+
+on:
+  workflow_call:
+    secrets:
+      DOCKERHUB_USERNAME:
+        required: true
+        description: 'Docker Hub user to publish as.'
+      DOCKERHUB_TOKEN:
+        required: true
+        description: 'Docker Hub access token with write scope.'
+    inputs:
+      tag_name:
+        required: true
+        type: string
+  workflow_dispatch:
+    inputs:
+      tag_name:
+        description: "Release tag to build and publish, e.g. v42.1.7"
+        required: true
+        type: string
+
+jobs:
+  publish-container:
+    name: "Push filipfilmar/upspinserver-drive and upspin-setupstorage-drive"
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Setup bazel
+        uses: bazel-contrib/setup-bazel@0.8.5
+        with:
+          bazelisk-cache: true
+          disk-cache: ${{ github.workflow }}
+          repository-cache: true
+      # Build the source as of the tag, so that re-running this workflow for an
+      # older release reproduces that release rather than current main.
+      - name: Checkout ${{ inputs.tag_name }}
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.tag_name }}
+      - name: Cache
+        uses: actions/cache@v4
+        with:
+          path: "~/.cache/bazel"
+          key: ${{ runner.os }}-container-bazel-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-container-bazel-
+      # crane, which rules_oci invokes to push, reads ~/.docker/config.json.
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      # Guard the tag before anything is pushed. //containers:remote_tags falls
+      # back to the placeholder 0.0.0 when unstamped; refusing a non-semver tag
+      # here means that placeholder can never be published by mistake.
+      - name: Validate tag is an explicit version
+        env:
+          TAG_NAME: ${{ inputs.tag_name }}
+        run: |
+          set -euo pipefail
+          if ! printf '%s' "$TAG_NAME" | grep -Eq '^v?[0-9]+\.[0-9]+\.[0-9]+$'; then
+            echo "::error::'$TAG_NAME' is not an explicit version (expected e.g. v42.1.7)."
+            exit 1
+          fi
+      # A tag created before versioned publishing existed still has
+      # `remote_tags = ["latest"]` in its BUILD file, which silently ignores
+      # --embed_label and would republish `latest`. Build the tag file first and
+      # assert it carries the expected version, so that case fails loudly here
+      # instead of quietly overwriting a floating tag in the registry.
+      - name: Verify the checked-out source produces the expected version
+        env:
+          TAG_NAME: ${{ inputs.tag_name }}
+        run: |
+          set -euo pipefail
+          EXPECTED="${TAG_NAME#v}"
+          bazel build --embed_label="$TAG_NAME" //containers:remote_tags
+          ACTUAL="$(cat bazel-bin/containers/remote_tags.txt)"
+          if [ "$ACTUAL" != "$EXPECTED" ]; then
+            echo "::error::Source at '$TAG_NAME' yields tag(s) '$ACTUAL', expected '$EXPECTED'. That tag predates versioned container publishing; nothing was pushed."
+            exit 1
+          fi
+      # --embed_label drives //containers:remote_tags, which emits the bare
+      # semver. It must precede the target: it is a bazel flag, not an argument
+      # to the push script. Both images are pushed with the same version.
+      - name: "Push ${{ inputs.tag_name }}"
+        env:
+          TAG_NAME: ${{ inputs.tag_name }}
+        run: |
+          set -euo pipefail
+          bazel run --embed_label="$TAG_NAME" //containers:upspinserver_push
+          bazel run --embed_label="$TAG_NAME" //containers:setupstorage_push
+      - name: Summary
+        env:
+          TAG_NAME: ${{ inputs.tag_name }}
+        run: |
+          {
+            echo "Pushed (linux/amd64 + linux/arm64):"
+            echo "- \`filipfilmar/upspinserver-drive:${TAG_NAME#v}\`"
+            echo "- \`filipfilmar/upspin-setupstorage-drive:${TAG_NAME#v}\`"
+          } >> "$GITHUB_STEP_SUMMARY"
