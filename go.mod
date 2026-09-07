@@ -5,7 +5,7 @@ go 1.26.2
 require (
 	golang.org/x/oauth2 v0.36.0
 	google.golang.org/api v0.276.0
-	upspin.io v43.0.0+incompatible
+	upspin.io v45.0.0+incompatible
 )
 
 require (
@@ -36,4 +36,4 @@ require (
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 )
 
-replace upspin.io => github.com/filmil/upspin v0.0.0-20260419091921-a73a39e10e1e
+replace upspin.io => github.com/filmil/upspin v0.0.0-20260906231736-722fbca3c45b
