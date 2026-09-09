@@ -64,6 +64,13 @@ jobs:
       registry: filmil/bazel-registry
       # This is the fork of `registry`. It can be the same repo.
       registry_fork: filmil/bazel-registry
+      # Only one publish workflow may attest, and it is the BCR one. Two
+      # attesting publishes upload MODULE.bazel.intoto.jsonl and
+      # source.json.intoto.jsonl to the release under those fixed names and
+      # overwrite each other, leaving the entry that was written first naming
+      # hashes the release no longer serves. BCR verifies attestations at
+      # presubmit and this registry does not, so BCR is the one that keeps
+      # them. Entries here simply have no attestations.json.
       attest: false
       draft: false
     permissions:
