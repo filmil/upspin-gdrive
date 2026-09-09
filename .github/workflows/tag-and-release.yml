@@ -78,21 +78,35 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           release_branches: main
-      - name: Create a GitHub release
-        uses: ncipollo/release-action@v1
-        with:
-          tag: ${{ steps.tag_version.outputs.new_tag }}
-          generateReleaseNotes: true
-      - name: Get release tag
-        id: get_version
-        run: echo "VERSION=${{ steps.tag_version.outputs.new_tag }}" >> $GITHUB_ENV
-      - name: Get repo name
-        id: get_repo_name
-        run: echo "REPO_NAME=$(echo '${{ github.repository }}' | awk -F '/' '{print $2}')" >> $GITHUB_ENV
 
-  release:
+  # Runs the tests, builds the source archive through
+  # .github/workflows/release_prep.sh, attests it with
+  # actions/attest-build-provenance, and creates the GitHub release.
+  #
+  # This reusable workflow is not interchangeable with a local equivalent. The
+  # Bazel Central Registry verifies a source archive attestation with
+  # slsa-verifier against a hard-coded builder id, set in tools/slsa.py of
+  # bazelbuild/bazel-central-registry, and that id names release_ruleset.yaml.
+  source_release:
     needs: tag
     if: ${{ needs.tag.outputs.tag_name != '' }}
+    permissions:
+      contents: write      # upload release files
+      id-token: write      # attest provenance
+      attestations: write  # attest provenance
+    uses: bazel-contrib/.github/.github/workflows/release_ruleset.yaml@v7.7.0
+    with:
+      tag_name: ${{ needs.tag.outputs.tag_name }}
+      release_files: |
+        ${{ needs.tag.outputs.tag_name }}.tar.gz
+      prerelease: false
+      bazel_test_command: "bazel test --test_output=errors //..."
+
+  release:
+    needs: [tag, source_release]
+    if: ${{ needs.tag.outputs.tag_name != '' }}
+    permissions:
+      contents: write
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -146,13 +160,6 @@ jobs:
               echo "Warning: Could not find binary for $TARGET"
             fi
           done
-      - name: Find version tag
-        id: tag_version
-        uses: mathieudutour/github-tag-action@v6.2
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          release_branches: main
-          dry_run: true
       - name: "Publish ${{ matrix.os }}_${{ matrix.arch }}"
         uses: ncipollo/release-action@v1
         env:
@@ -160,11 +167,11 @@ jobs:
         with:
           allowUpdates: true
           artifacts: "artifacts/*"
-          tag: ${{ steps.tag_version.outputs.previous_tag }}
+          tag: ${{ needs.tag.outputs.tag_name }}
 
   # This workflow waits for binary artifacts to be published.
   publish:
-    needs: tag
+    needs: [tag, source_release]
     if: ${{ needs.tag.outputs.tag_name != '' }}
     uses: ./.github/workflows/publish.yml
     with:
@@ -182,3 +189,18 @@ jobs:
       DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
       DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
 
+
+  # BCR is the only publish that attests, see the note in publish.yml. This job
+  # runs after that one rather than beside it, so that the order in which the
+  # two registries see a release stays fixed, and so that turning `attest` back
+  # on in publish.yml cannot silently produce two attesting publishes racing to
+  # overwrite the same two release assets.
+  publish-bcr:
+    needs: [tag, publish]
+    if: ${{ needs.tag.outputs.tag_name != '' }}
+    uses: ./.github/workflows/publish-bcr.yml
+    with:
+      tag_name: ${{ needs.tag.outputs.tag_name }}
+    # publish-bcr.yml declares no workflow_call secrets and reads
+    # secrets.BCR_PUBLISH_TOKEN directly, so it has to inherit them.
+    secrets: inherit
