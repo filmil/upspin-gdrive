@@ -17,15 +17,12 @@ go_sdk.download(version = "1.26.2")
 
 go_deps = use_extension("@gazelle//:extensions.bzl", "go_deps")
 go_deps.from_file(go_mod = "//:go.mod")
-go_deps.gazelle_override(
-    build_file_generation = "off",
-    path = "upspin.io",
-)
 
-# Use this to generate the go_deps.bzl file
+# upspin.io comes from the upspin Bazel module above (@upspin), not from
+# go_deps. A go_deps.gazelle_override for it would make this module unusable
+# as a dependency: gazelle forbids that tag in a non-root module.
 use_repo(
     go_deps,
-    "io_upspin",
     "org_golang_google_api",
     "org_golang_x_oauth2",
 )
