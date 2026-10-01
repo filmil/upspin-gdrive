@@ -1,0 +1,22 @@
+# SPDX-License-Identifier: Apache-2.0
+
+# The integration module builds and tests upspin_drive the way an outside
+# module does: as a bazel_dep, with none of the root module's overrides and
+# no custom registry. BCR presubmit runs it as the test module; see
+# .bcr/presubmit.yml.
+module(
+    name = "upspin_drive_integration",
+    version = "0.0.0",
+)
+
+bazel_dep(name = "upspin_drive", version = "0.0.0")
+local_path_override(
+    module_name = "upspin_drive",
+    path = "..",
+)
+
+bazel_dep(name = "rules_go", version = "0.61.1")
+
+# The test imports upspin.io packages directly, so it names the upspin
+# module it gets through upspin_drive.
+bazel_dep(name = "upspin", version = "45.0.0")

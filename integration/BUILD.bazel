@@ -1,0 +1,15 @@
+# SPDX-License-Identifier: Apache-2.0
+
+load("@rules_go//go:def.bzl", "go_test")
+
+# A consumer of upspin_drive: it links the Drive storage and reaches it
+# through upspin's storage registry, as an upspinserver does.
+go_test(
+    name = "consumer_test",
+    srcs = ["consumer_test.go"],
+    deps = [
+        "@upspin//cloud/storage",
+        "@upspin//errors",
+        "@upspin_drive//cloud/storage/drive",
+    ],
+)
