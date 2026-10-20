@@ -13,7 +13,7 @@ git_override(
     remote = "https://github.com/filmil/upspin.git",
 )
 
-go_sdk = use_extension("@rules_go//go:extensions.bzl", "go_sdk")
+go_sdk = use_extension("@rules_go//go:extensions.bzl", "go_sdk", dev_dependency = True)
 go_sdk.download(version = "1.26.2")
 
 go_deps = use_extension("@gazelle//:extensions.bzl", "go_deps")
@@ -28,12 +28,12 @@ use_repo(
     "org_golang_x_oauth2",
 )
 
-bazel_dep(name = "rules_oci", version = "2.3.0")
-bazel_dep(name = "rules_pkg", version = "1.2.0")
-bazel_dep(name = "platforms", version = "1.1.0")
-bazel_dep(name = "bazel_lib", version = "3.3.1")
+bazel_dep(name = "rules_oci", version = "2.3.0", dev_dependency = True)
+bazel_dep(name = "rules_pkg", version = "1.2.0", dev_dependency = True)
+bazel_dep(name = "platforms", version = "1.1.0", dev_dependency = True)
+bazel_dep(name = "bazel_lib", version = "3.3.1", dev_dependency = True)
 
-oci = use_extension("@rules_oci//oci:extensions.bzl", "oci")
+oci = use_extension("@rules_oci//oci:extensions.bzl", "oci", dev_dependency = True)
 oci.pull(
     name = "distroless_base",
     digest = "sha256:20bc6c0bc4d625a22a8fde3e55f6515709b32055ef8fb9cfbddaa06d1760f838",
