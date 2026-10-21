@@ -1,6 +1,6 @@
 module github.com/filmil/upspin-gdrive
 
-go 1.26.2
+go 1.26.10
 
 require (
 	golang.org/x/oauth2 v0.36.0
