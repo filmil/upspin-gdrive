@@ -6,12 +6,10 @@ module(
 
 bazel_dep(name = "rules_go", version = "0.61.1")
 bazel_dep(name = "gazelle", version = "0.51.3")
-bazel_dep(name = "upspin", version = "45.0.0")
-git_override(
-    module_name = "upspin",
-    commit = "858e2dcb887c70dda61534e7236d970fee94bf4a",
-    remote = "https://github.com/filmil/upspin.git",
-)
+# A released upspin from the custom registry (.bazelrc), so that the
+# version named here is the code that is built. Keep it in step with the
+# replace line in go.mod.
+bazel_dep(name = "upspin", version = "45.2.0")
 
 go_sdk = use_extension("@rules_go//go:extensions.bzl", "go_sdk", dev_dependency = True)
 
