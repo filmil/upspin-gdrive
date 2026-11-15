@@ -32,4 +32,9 @@ bazel_dep(name = "filmil_upspin_drive", version = "${VERSION}")
 Labels are then \`@filmil_upspin_drive//...\`. Add
 \`repo_name = "upspin_drive"\` to the line to write them as
 \`@upspin_drive//...\` instead.
+
+This module depends on \`filmil_upspin\`, the renamed upspin module. If
+your build also names \`upspin\` directly, change that to \`filmil_upspin\`
+too: both hold the Go packages \`upspin.io/...\`, and one build cannot
+have both.
 NOTES
