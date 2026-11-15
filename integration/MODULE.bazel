@@ -5,13 +5,15 @@
 # no custom registry. BCR presubmit runs it as the test module; see
 # .bcr/presubmit.yml.
 module(
-    name = "upspin_drive_integration",
+    name = "filmil_upspin_drive_integration",
     version = "0.0.0",
 )
 
-bazel_dep(name = "upspin_drive", version = "0.0.0")
+# repo_name keeps the labels @upspin_drive//..., as a user of the module
+# may.
+bazel_dep(name = "filmil_upspin_drive", version = "0.0.0", repo_name = "upspin_drive")
 local_path_override(
-    module_name = "upspin_drive",
+    module_name = "filmil_upspin_drive",
     path = "..",
 )
 
@@ -22,4 +24,4 @@ go_sdk.from_file(go_mod = "@upspin_drive//:go.mod")
 
 # The test imports upspin.io packages directly, so it names the upspin
 # module it gets through upspin_drive.
-bazel_dep(name = "upspin", version = "45.2.0")
+bazel_dep(name = "filmil_upspin", version = "46.0.0", repo_name = "upspin")

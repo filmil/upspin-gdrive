@@ -41,15 +41,13 @@ jobs:
         run: bazel test //...
 
   # BCR publication: every dependency must resolve from the Bazel Central
-  # Registry alone. This runs in integration/, where upspin_drive is a
-  # dependency, so its git_override for upspin does not apply, just as for
-  # a real consumer; from the root, that override would hide a missing
-  # upspin. .bazelrc lists a custom registry first, so the rc files are
-  # skipped.
+  # Registry alone. This runs in integration/, where filmil_upspin_drive is
+  # a dependency, just as for a real consumer. .bazelrc lists a custom
+  # registry first, so the rc files are skipped.
   #
-  # upspin is not in BCR yet, so this cannot pass until it is. Until then
-  # the step reports a warning instead of failing the job. Remove
-  # the step's continue-on-error once upspin is in BCR.
+  # filmil_upspin is not in BCR yet, so this cannot pass until it is. Until
+  # then the step reports a warning instead of failing the job. Remove
+  # the step's continue-on-error once filmil_upspin is in BCR.
   bcr_dependencies:
     runs-on: ubuntu-latest
     defaults:
@@ -68,7 +66,7 @@ jobs:
         continue-on-error: true
         run: |
           if ! bazel --ignore_all_rc_files mod graph --registry=https://bcr.bazel.build; then
-            echo "::warning::upspin_drive cannot be published to BCR yet: a dependency, upspin, is not in BCR."
+            echo "::warning::filmil_upspin_drive cannot be published to BCR yet: a dependency, filmil_upspin, is not in BCR."
             exit 1
           fi
 

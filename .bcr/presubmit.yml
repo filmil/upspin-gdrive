@@ -1,5 +1,6 @@
 # BCR builds this module as a dependency of another, so a target here is
-# written as @upspin_drive//..., and the root module's overrides and its
+# written as @upspin_drive//... (the test module names filmil_upspin_drive
+# with repo_name = "upspin_drive"), and the root module's overrides and its
 # custom registry are not there. The integration module is that other
 # module; see integration/MODULE.bazel.
 #

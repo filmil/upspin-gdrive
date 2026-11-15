@@ -1,5 +1,7 @@
+# The module is named filmil_upspin_drive: it belongs to filmil/upspin, a
+# spin-off of Upspin, and the upspin names belong to the original project.
 module(
-    name = "upspin_drive",
+    name = "filmil_upspin_drive",
     version = "0.1.1",
     bazel_compatibility = [">=8.0.0"],
 )
@@ -8,9 +10,9 @@ bazel_dep(name = "rules_go", version = "0.61.1")
 bazel_dep(name = "gazelle", version = "0.51.3")
 # A released upspin from the custom registry (.bazelrc), so that the
 # version named here is the code that is built. Keep it in step with the
-# replace line in go.mod and with bazel_dep(name = "upspin") in
-# integration/MODULE.bazel.
-bazel_dep(name = "upspin", version = "45.2.0")
+# replace line in go.mod and with bazel_dep(name = "filmil_upspin") in
+# integration/MODULE.bazel. repo_name keeps the labels @upspin//....
+bazel_dep(name = "filmil_upspin", version = "46.0.0", repo_name = "upspin")
 
 go_sdk = use_extension("@rules_go//go:extensions.bzl", "go_sdk", dev_dependency = True)
 
