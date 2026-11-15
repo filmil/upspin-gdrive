@@ -26,6 +26,10 @@ cat <<NOTES
 ## Using Bzlmod
 
 \`\`\`starlark
-bazel_dep(name = "upspin_drive", version = "${VERSION}")
+bazel_dep(name = "filmil_upspin_drive", version = "${VERSION}")
 \`\`\`
+
+Labels are then \`@filmil_upspin_drive//...\`. Add
+\`repo_name = "upspin_drive"\` to the line to write them as
+\`@upspin_drive//...\` instead.
 NOTES
