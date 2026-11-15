@@ -1,4 +1,4 @@
-load("@rules_go//go:def.bzl", "go_binary", "go_library")
+load("@rules_go//go:def.bzl", "go_binary", "go_library", "go_test")
 
 go_library(
     name = "upspinserver-drive_lib",
@@ -16,4 +16,13 @@ go_binary(
     name = "upspinserver-drive",
     embed = [":upspinserver-drive_lib"],
     visibility = ["//visibility:public"],
+)
+
+go_test(
+    name = "upspinserver-drive_test",
+    size = "small",
+    srcs = ["eepq_test.go"],
+    data = [":upspinserver-drive"],
+    env = {"UPSPINSERVER_DRIVE": "$(rootpath :upspinserver-drive)"},
+    embed = [":upspinserver-drive_lib"],
 )

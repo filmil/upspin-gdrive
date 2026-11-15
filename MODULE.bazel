@@ -26,7 +26,6 @@ go_deps.from_file(go_mod = "//:go.mod")
 # as a dependency: gazelle forbids that tag in a non-root module.
 use_repo(
     go_deps,
-    "io_upspin",
     "org_golang_google_api",
     "org_golang_x_oauth2",
 )
