@@ -9,12 +9,14 @@ bazel_dep(name = "gazelle", version = "0.51.3")
 bazel_dep(name = "upspin", version = "45.0.0")
 git_override(
     module_name = "upspin",
-    commit = "722fbca3c45b3494c3ec09a880e145c684860b1a",
+    commit = "858e2dcb887c70dda61534e7236d970fee94bf4a",
     remote = "https://github.com/filmil/upspin.git",
 )
 
 go_sdk = use_extension("@rules_go//go:extensions.bzl", "go_sdk", dev_dependency = True)
-go_sdk.download(version = "1.26.10")
+
+# The Go version comes from go.mod, the one place that names it.
+go_sdk.from_file(go_mod = "//:go.mod")
 
 go_deps = use_extension("@gazelle//:extensions.bzl", "go_deps")
 go_deps.from_file(go_mod = "//:go.mod")
@@ -24,6 +26,7 @@ go_deps.from_file(go_mod = "//:go.mod")
 # as a dependency: gazelle forbids that tag in a non-root module.
 use_repo(
     go_deps,
+    "io_upspin",
     "org_golang_google_api",
     "org_golang_x_oauth2",
 )
