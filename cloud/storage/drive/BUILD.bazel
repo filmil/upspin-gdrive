@@ -20,9 +20,13 @@ go_library(
 
 go_test(
     name = "drive_test",
-    srcs = ["drive_e2e_test.go"],
+    srcs = [
+        "drive_e2e_test.go",
+        "token_test.go",
+    ],
     embed = [":drive"],
     deps = [
+        "@org_golang_x_oauth2//:oauth2",
         "@upspin//cloud/storage",
         "@upspin//errors",
         "@upspin//log",

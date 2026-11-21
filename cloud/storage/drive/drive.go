@@ -10,6 +10,7 @@ import (
 	"context"
 	"fmt"
 	"io/ioutil"
+	"net/http"
 	"os"
 	"time"
 
@@ -72,27 +73,44 @@ func New(o *storage.Opts) (storage.Storage, error) {
 	if conf.ClientSecret == "" {
 		return nil, errors.E(op, errors.Invalid, errors.Str("missing clientSecret"))
 	}
+	// Token refreshes go through a client with a timeout, so that a
+	// stalled OAuth endpoint cannot block the Drive client, which waits
+	// for the same refresh, or /healthz for long. The Drive client builds
+	// on its transport, not its timeout.
+	ctx = context.WithValue(ctx, oauth2.HTTPClient, &http.Client{Timeout: tokenTimeout})
 	// One token source for the client and the health check, so that the
 	// check sees the token the client uses, and a refresh by either one
 	// serves both.
 	ts := conf.TokenSource(ctx, &t)
-	metrics.RegisterHealthCheck("drive_token", func() error {
-		// Token refreshes an expired token; it fails when the refresh
-		// token no longer works, for example after it was revoked.
-		if _, err := ts.Token(); err != nil {
-			return errors.E(op, errors.Permission, errors.Errorf("Drive token: %v", err))
-		}
-		return nil
-	})
 	client := oauth2.NewClient(ctx, ts)
 	svc, err := drive.New(client)
 	if err != nil {
 		return nil, errors.E(op, errors.Internal, err)
 	}
+	// Registered once New cannot fail any more. A Drive server has one
+	// Drive storage; a second New replaces the check with its own.
+	metrics.RegisterHealthCheck("drive_token", tokenCheck(ts))
 	return &driveImpl{
 		files: svc.Files,
 		ids:   cache.NewLRU(lruSize),
 	}, nil
+}
+
+// tokenTimeout bounds a refresh of the OAuth access token.
+const tokenTimeout = 30 * time.Second
+
+// tokenCheck returns the "drive_token" health check: it asks ts for a
+// token. The token source keeps the access token until it expires, about
+// an hour, and only then refreshes it, so a revoked refresh token fails the
+// check at the next refresh, not at once.
+func tokenCheck(ts oauth2.TokenSource) func() error {
+	return func() error {
+		const op = "cloud/storage/drive.tokenCheck"
+		if _, err := ts.Token(); err != nil {
+			return errors.E(op, err)
+		}
+		return nil
+	}
 }
 
 var (
