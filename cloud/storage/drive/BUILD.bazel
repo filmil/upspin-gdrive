@@ -13,6 +13,7 @@ go_library(
         "@upspin//cache",
         "@upspin//cloud/storage",
         "@upspin//errors",
+        "@upspin//serverutil/metrics",
         "@upspin//upspin",
     ],
 )

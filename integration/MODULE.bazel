@@ -24,4 +24,4 @@ go_sdk.from_file(go_mod = "@upspin_drive//:go.mod")
 
 # The test imports upspin.io packages directly, so it names the
 # filmil_upspin module that filmil_upspin_drive depends on.
-bazel_dep(name = "filmil_upspin", version = "46.0.0", repo_name = "upspin")
+bazel_dep(name = "filmil_upspin", version = "46.5.0", repo_name = "upspin")

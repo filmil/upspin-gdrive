@@ -18,6 +18,7 @@ import (
 	"upspin.io/cache"
 	"upspin.io/cloud/storage"
 	"upspin.io/errors"
+	"upspin.io/serverutil/metrics"
 	"upspin.io/upspin"
 
 	"golang.org/x/oauth2"
@@ -71,7 +72,19 @@ func New(o *storage.Opts) (storage.Storage, error) {
 	if conf.ClientSecret == "" {
 		return nil, errors.E(op, errors.Invalid, errors.Str("missing clientSecret"))
 	}
-	client := conf.Client(ctx, &t)
+	// One token source for the client and the health check, so that the
+	// check sees the token the client uses, and a refresh by either one
+	// serves both.
+	ts := conf.TokenSource(ctx, &t)
+	metrics.RegisterHealthCheck("drive_token", func() error {
+		// Token refreshes an expired token; it fails when the refresh
+		// token no longer works, for example after it was revoked.
+		if _, err := ts.Token(); err != nil {
+			return errors.E(op, errors.Permission, errors.Errorf("Drive token: %v", err))
+		}
+		return nil
+	})
+	client := oauth2.NewClient(ctx, ts)
 	svc, err := drive.New(client)
 	if err != nil {
 		return nil, errors.E(op, errors.Internal, err)
