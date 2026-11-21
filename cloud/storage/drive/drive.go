@@ -105,7 +105,7 @@ const tokenTimeout = 30 * time.Second
 // check at the next refresh, not at once.
 func tokenCheck(ts oauth2.TokenSource) func() error {
 	return func() error {
-		const op = "cloud/storage/drive.tokenCheck"
+		const op errors.Op = "cloud/storage/drive.tokenCheck"
 		if _, err := ts.Token(); err != nil {
 			return errors.E(op, err)
 		}
