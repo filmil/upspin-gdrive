@@ -42,7 +42,7 @@ require (
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 )
 
-// filmil/upspin v46.5.0. Go cannot name the tag itself: the module path
+// filmil/upspin v46.5.3. Go cannot name the tag itself: the module path
 // has no /v46 suffix. Keep in step with bazel_dep(name = "filmil_upspin")
 // in MODULE.bazel and integration/MODULE.bazel.
-replace upspin.io => github.com/filmil/upspin v0.0.0-20261121061701-4494f0dec081
+replace upspin.io => github.com/filmil/upspin v0.0.0-20261122052945-4e0ae3dce8cc
