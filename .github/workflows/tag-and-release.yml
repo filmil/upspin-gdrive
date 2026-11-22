@@ -4,14 +4,25 @@
 # * builds a source bundle and uploads it into the release
 # * builds binaries and uploads them into the release
 #
-# The workflow can be run manually, otherwise it runs once a week.
+# It runs after every push to main, and can be run manually. The check job
+# below skips a run with no commit since the last release. Every release
+# is published to the Bazel Central Registry (publish-bcr).
 name: Tag and Release
 
 
 on:
-  schedule:
-    - cron: '0 0 20 * *'
+  push:
+    branches: [main]
   workflow_dispatch:
+
+# One run at a time per ref, so that two quick merges do not race to tag.
+# A run waits for the one before it. GitHub keeps only the newest waiting
+# run of a group and cancels older waiting ones; the newest releases its own
+# commit, and so everything before it. A manual run on another branch has a
+# group of its own, so it cannot evict a main release.
+concurrency:
+  group: tag-and-release-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
   # The scheduled run used to bump a version whether or not anything had
