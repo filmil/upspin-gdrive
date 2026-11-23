@@ -1,4 +1,10 @@
 common --registry=https://raw.githubusercontent.com/filmil/bazel-registry/main
 common --registry=https://bcr.bazel.build
 
+# Release builds: --config=release stamps the commit and the release tag
+# into upspin.io/version, which the binaries report in -version and in
+# upspin_build_info (tools/workspace_status.sh).
+build:release --stamp
+build:release --workspace_status_command=tools/workspace_status.sh
+
 try-import %workspace%/user.bazelrc
