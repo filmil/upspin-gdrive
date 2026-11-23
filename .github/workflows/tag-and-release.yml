@@ -149,6 +149,10 @@ jobs:
           repository-cache: true
       - name: Checkout
         uses: actions/checkout@v2
+        with:
+          # The tag, so that tools/workspace_status.sh finds the release
+          # tag at HEAD for the --config=release stamp.
+          ref: ${{ needs.tag.outputs.tag_name }}
       - name: Cache
         uses: actions/cache@v4
         with:
@@ -167,7 +171,8 @@ jobs:
           
           for TARGET in $TARGETS; do
             echo "Building $TARGET"
-            bazel build \
+            # --config=release stamps the version (tools/workspace_status.sh).
+            bazel build --config=release \
               --platforms=@rules_go//go/toolchain:${{ matrix.os }}_${{ matrix.arch}} \
               $TARGET
             
