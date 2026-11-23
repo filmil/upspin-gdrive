@@ -193,6 +193,21 @@ jobs:
               echo "Warning: Could not find binary for $TARGET"
             fi
           done
+      # The server binary must name the release and the commit
+      # (--config=release, tools/workspace_status.sh). This runs after the
+      # tag exists, so it warns instead of failing, as in filmil/upspin:
+      # failing here would leave a release without binaries.
+      - name: "Check that the server binary names the release"
+        run: |
+          bin="artifacts/upspinserver-drive-${{ matrix.os }}-${{ matrix.arch }}"
+          tag="${{ needs.tag.outputs.tag_name }}"
+          commit="$(git rev-parse HEAD)"
+          if grep -a -q -F "$tag" "$bin" && grep -a -q -F "$commit" "$bin"; then
+            echo "$bin names $tag and $commit"
+          else
+            echo "::warning::$bin does not name $tag and $commit; it reports no version"
+            grep -h -E '^(STABLE_RELEASE_TAG|STABLE_GIT_COMMIT|GIT_STATUS) ' bazel-out/stable-status.txt bazel-out/volatile-status.txt || true
+          fi
       - name: "Publish ${{ matrix.os }}_${{ matrix.arch }}"
         uses: ncipollo/release-action@v1
         env:
